@@ -1,113 +1,262 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(App());
 
-class MyApp extends StatelessWidget {
+class App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Probability and Performance Measurement App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Home(title: 'Perfomance et Probabilité'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class Home extends StatefulWidget {
+  Home({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeState createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomeState extends State<Home> {
+  // customers
+  var n;
+  //customers input rate
+  var y;
+  //customers output rate
+  var m;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+          title: Text(widget.title),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () => showAboutDialog(
+                  context: context,
+                  applicationName: 'PP Calculator',
+                  applicationVersion: '0.0.1',
+                  children: [
+                    Text(
+                        'Calculateur de Perfomance et Probabilité sur les systèmes M|M|1'),
+                    Text(''),
+                    Text('Par Lusavuvu Situatala'),
+                  ]),
+              icon: Icon(Icons.help),
+            ),
+          ],
+          centerTitle: true),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 50.0, horizontal: 30.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: Text(
+                    'Proceder aux calculs',
+                    style: TextStyle(
+                      fontSize: 22,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Nombre de clients (n)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (val) =>
+                      null == val ? 'Veuillez remplir ce champ' : null,
+                  onChanged: (val) => n = val,
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Taux d\'entré de clients (y)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (val) =>
+                      null == val ? 'Veuillez remplir ce champ' : null,
+                  onChanged: (val) => y = val,
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Taux de sorti de clients (M)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (val) =>
+                      null == val ? 'Veuillez remplir ce champ' : null,
+                  onChanged: (val) => m = val,
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(2.0)),
+                    ),
+                    side: BorderSide(
+                      width: 1,
+                      color: Colors.black,
+                    ),
+                  ),
+                  onPressed: () {
+                    if(_formKey.currentState!.validate()) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Result(n: n, y: y, m: m)));
+                    }
+                  },
+                  child: Text(
+                    'Calculer',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+    );
+  }
+}
+
+class Result extends StatefulWidget {
+  Result({Key? key, required this.n, required this.y, required this.m})
+      : super(key: key);
+
+  final n, y, m;
+
+  @override
+  _ResultState createState() => _ResultState();
+}
+
+class _ResultState extends State<Result> {
+  @override
+  void initState() {
+    int n = int.parse(widget.n);
+    double y = double.parse(widget.y);
+    double m = double.parse(widget.m);
+
+    f = y / m;
+    f = f.toStringAsFixed(3);
+    f = num.parse(f);
+
+    if (f < 1) {
+      s = 'Equilibre';
+    } else {
+      s = 'Explosion';
+    }
+
+    if (n >= 1) {
+      p = pow(f, n) * (1 - f);
+      p = p.toStringAsFixed(3);
+      p = num.parse(p);
+    } else if (n == 0) {
+      p = 1 - f;
+      p = p.toStringAsFixed(3);
+      p = num.parse(p);
+    } else {
+      p = 'Nombre de clients non valide!';
+    }
+
+    ns = f / (1 - f);
+    ns = ns.toStringAsFixed(3);
+    ns = num.parse(ns);
+
+    nf = (f * f) / (1 - f);
+    nf = nf.toStringAsFixed(3);
+    nf = num.parse(nf);
+
+    nss = ns - nf;
+    nss = nss.toStringAsFixed(3);
+    nss = num.parse(nss);
+
+    super.initState();
+  }
+
+  var f, p, ns, nf, nss, s;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Les resultats'),
+      ),
+      body: Container(
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:',
+              'f vaut: $f',
+              style: TextStyle(
+                fontSize: 25,
+              ),
             ),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              'P vaut: $p',
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Text(
+              'NS vaut: $ns',
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Text(
+              'Nf vaut: $nf',
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Text(
+              'Ns vaut: $nss',
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Text(
+              '',
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Center(
+              child: Text(
+                'Le système est en $s',
+                style: TextStyle(
+                  fontSize: 25,
+                ),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
